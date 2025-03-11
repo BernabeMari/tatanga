@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandatory Access Control System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+        .btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        .btn-danger {
+            background-color: #ea4335;
+        }
+        .btn-danger:hover {
+            background-color: #d33426;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .role-label {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+        }
+        .role-confidential {
+            background-color: #34a853;
+        }
+        .role-secret {
+            background-color: #fbbc05;
+            color: black;
+        }
+        .role-topsecret {
+            background-color: #ea4335;
+        }
+        .user-info {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .error-message {
+            color: #ea4335;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mandatory Access Control System</h1>
+        
+        <!-- Login Panel -->
+        <div id="loginPanel" class="panel active">
+            <h2>Choose a role:</h2>
+            <div class="btn-group">
+                <button id="adminBtn" class="btn">Admin (Top Secret)</button>
+                <button id="managerBtn" class="btn">Manager (Secret)</button>
+                <button id="employeeBtn" class="btn">Employee (Confidential)</button>
+            </div>
+        </div>
+        
+        <!-- Main Panel -->
+        <div id="mainPanel" class="panel">
+            <div id="userInfo" class="user-info">
+                Current role: <span id="userRole"></span>
+            </div>
+            
+            <h2>Document List</h2>
+            <table id="documentTable">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Security Level</th>
+                        <th>Creation Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="documentTableBody">
+                    <!-- Documents will be populated here -->
+                </tbody>
+            </table>
+            
+            <div class="btn-group">
+                <button id="createDocBtn" class="btn">Create New Document</button>
+                <button id="logoutBtn" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Create Document Panel -->
+        <div id="createDocPanel" class="panel">
+            <h2>Create New Document</h2>
+            <div id="errorMessage" class="error-message">
+                Error: You cannot create a document with higher security clearance than your own.
+            </div>
+            
+            <div class="form-group">
+                <label for="docTitle">Title:</label>
+                <input type="text" id="docTitle" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="docContent">Content:</label>
+                <textarea id="docContent" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="securityLevel">Security Level:</label>
+                <select id="securityLevel">
+                    <option value="1">Confidential</option>
+                    <option value="2">Secret</option>
+                    <option value="3">Top Secret</option>
+                </select>
+            </div>
+            
+            <div class="btn-group">
+                <button id="saveDocBtn" class="btn">Create Document</button>
+                <button id="cancelCreateBtn" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Document Viewer Panel -->
+        <div id="viewDocPanel" class="panel">
+            <h2 id="viewDocTitle"></h2>
+            <div class="form-group">
+                <label>Security Level:</label>
+                <div id="viewDocLevel"></div>
+            </div>
+            <div class="form-group">
+                <label>Creation Date:</label>
+                <div id="viewDocDate"></div>
+            </div>
+            <div class="form-group">
+                <label>Content:</label>
+                <div id="viewDocContent" style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; min-height: 100px;"></div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="backToMainBtn" class="btn">Back to List</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Security levels constants
+        const TOP_SECRET = 3;
+        const SECRET = 2;
+        const CONFIDENTIAL = 1;
+        
+        // User level
+        let userLevel = 0;
+        
+        // Document list
+        let documents = [
+            { title: "Top Secret Plan", content: "This is a top secret plan.", securityLevel: TOP_SECRET, creationDate: new Date() },
+            { title: "Secret Report", content: "This is a secret report.", securityLevel: SECRET, creationDate: new Date() },
+            { title: "Confidential Memo", content: "This is a confidential memo.", securityLevel: CONFIDENTIAL, creationDate: new Date() }
+        ];
+        
+        // DOM Elements
+        const loginPanel = document.getElementById('loginPanel');
+        const mainPanel = document.getElementById('mainPanel');
+        const createDocPanel = document.getElementById('createDocPanel');
+        const viewDocPanel = document.getElementById('viewDocPanel');
+        const userRoleSpan = document.getElementById('userRole');
+        const documentTableBody = document.getElementById('documentTableBody');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // Login buttons
+        document.getElementById('adminBtn').addEventListener('click', () => login(TOP_SECRET, 'Admin (Top Secret)'));
+        document.getElementById('managerBtn').addEventListener('click', () => login(SECRET, 'Manager (Secret)'));
+        document.getElementById('employeeBtn').addEventListener('click', () => login(CONFIDENTIAL, 'Employee (Confidential)'));
+        
+        // Navigation buttons
+        document.getElementById('createDocBtn').addEventListener('click', () => showPanel(createDocPanel));
+        document.getElementById('logoutBtn').addEventListener('click', () => showPanel(loginPanel));
+        document.getElementById('cancelCreateBtn').addEventListener('click', () => showPanel(mainPanel));
+        document.getElementById('backToMainBtn').addEventListener('click', () => showPanel(mainPanel));
+        
+        // Create document
+        document.getElementById('saveDocBtn').addEventListener('click', createDocument);
+        
+        // Function to show a panel and hide others
+        function showPanel(panel) {
+            // Hide all panels
+            loginPanel.classList.remove('active');
+            mainPanel.classList.remove('active');
+            createDocPanel.classList.remove('active');
+            viewDocPanel.classList.remove('active');
+            
+            // Show the selected panel
+            panel.classList.add('active');
+            
+            // Reset the error message
+            errorMessage.style.display = 'none';
+        }
+        
+        // Function to handle login
+        function login(level, roleName) {
+            userLevel = level;
+            userRoleSpan.innerHTML = `<span class="role-label role-${getLevelClass(level)}">${roleName}</span>`;
+            showPanel(mainPanel);
+            updateDocumentTable();
+        }
+        
+        // Function to update the document table
+        function updateDocumentTable() {
+            documentTableBody.innerHTML = '';
+            
+            documents.forEach((doc, index) => {
+                // Only show documents with security level <= user's level
+                if (userLevel >= doc.securityLevel) {
+                    const row = document.createElement('tr');
+                    
+                    const titleCell = document.createElement('td');
+                    titleCell.textContent = doc.title;
+                    
+                    const levelCell = document.createElement('td');
+                    const levelName = getLevelName(doc.securityLevel);
+                    const levelClass = getLevelClass(doc.securityLevel);
+                    levelCell.innerHTML = `<span class="role-label role-${levelClass}">${levelName}</span>`;
+                    
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = formatDate(doc.creationDate);
+                    
+                    const actionCell = document.createElement('td');
+                    const viewBtn = document.createElement('button');
+                    viewBtn.textContent = 'View';
+                    viewBtn.className = 'btn';
+                    viewBtn.addEventListener('click', () => viewDocument(index));
+                    actionCell.appendChild(viewBtn);
+                    
+                    row.appendChild(titleCell);
+                    row.appendChild(levelCell);
+                    row.appendChild(dateCell);
+                    row.appendChild(actionCell);
+                    
+                    documentTableBody.appendChild(row);
+                }
+            });
+        }
+        
+        // Function to create a new document
+        function createDocument() {
+            const title = document.getElementById('docTitle').value;
+            const content = document.getElementById('docContent').value;
+            const securityLevel = parseInt(document.getElementById('securityLevel').value);
+            
+            if (!title || !content) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Check if user has permission to create document at this security level
+            if (securityLevel > userLevel) {
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Create and add the document
+            const newDoc = {
+                title: title,
+                content: content,
+                securityLevel: securityLevel,
+                creationDate: new Date()
+            };
+            
+            documents.push(newDoc);
+            
+            // Reset form and show main panel
+            document.getElementById('docTitle').value = '';
+            document.getElementById('docContent').value = '';
+            document.getElementById('securityLevel').value = '1';
+            
+            showPanel(mainPanel);
+            updateDocumentTable();
+        }
+        
+        // Function to view a document
+        function viewDocument(index) {
+            const doc = documents[index];
+            
+            document.getElementById('viewDocTitle').textContent = doc.title;
+            
+            const levelName = getLevelName(doc.securityLevel);
+            const levelClass = getLevelClass(doc.securityLevel);
+            document.getElementById('viewDocLevel').innerHTML = 
+                `<span class="role-label role-${levelClass}">${levelName}</span>`;
+            
+            document.getElementById('viewDocDate').textContent = formatDate(doc.creationDate);
+            document.getElementById('viewDocContent').textContent = doc.content;
+            
+            showPanel(viewDocPanel);
+        }
+        
+        // Utility function to get security level name
+        function getLevelName(level) {
+            switch (level) {
+                case TOP_SECRET:
+                    return "Top Secret";
+                case SECRET:
+                    return "Secret";
+                case CONFIDENTIAL:
+                    return "Confidential";
+                default:
+                    return "Unknown";
+            }
+        }
+        
+        // Utility function to get security level CSS class
+        function getLevelClass(level) {
+            switch (level) {
+                case TOP_SECRET:
+                    return "topsecret";
+                case SECRET:
+                    return "secret";
+                case CONFIDENTIAL:
+                    return "confidential";
+                default:
+                    return "";
+            }
+        }
+        
+        // Utility function to format date
+        function formatDate(date) {
+            return new Date(date).toLocaleString();
+        }
+    </script>
+</body>
+</html>

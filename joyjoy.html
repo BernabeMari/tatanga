@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attribute-Based Access Control Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #fff0f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(219, 112, 147, 0.3);
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #db7093;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #ffeef5;
+      border-radius: 8px;
+    }
+    
+    .user-attributes {
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    .resource-attributes {
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    .environment-attributes {
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    h3 {
+      color: #c25b7c;
+      margin-top: 0;
+    }
+    
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ffb6c1;
+      border-radius: 5px;
+      background-color: white;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    
+    button {
+      background-color: #db7093;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: block;
+      margin: 0 auto;
+    }
+    
+    button:hover {
+      background-color: #c25b7c;
+    }
+    
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #ffeef5;
+      transition: all 0.3s;
+    }
+    
+    .access-granted {
+      background-color: #e6ffe6;
+      border-left: 5px solid #4caf50;
+    }
+    
+    .access-denied {
+      background-color: #ffe6e6;
+      border-left: 5px solid #f44336;
+    }
+    
+    .resource-display {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      display: none;
+    }
+    
+    .logs {
+      margin-top: 30px;
+      background-color: #333;
+      color: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .policy-section {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #ffeef5;
+      border-radius: 8px;
+    }
+    
+    .policy-rule {
+      background-color: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border-left: 3px solid #db7093;
+    }
+    
+    .toggle-section {
+      cursor: pointer;
+      color: #db7093;
+      text-decoration: underline;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .checkbox-group {
+      margin-bottom: 15px;
+    }
+    
+    .checkbox-group label {
+      display: inline;
+      margin-left: 8px;
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Attribute-Based Access Control System</h1>
+    
+    <div class="controls">
+      <div class="user-attributes">
+        <h3>User Attributes</h3>
+        <label for="role">Role:</label>
+        <select id="role">
+          <option value="admin">Administrator</option>
+          <option value="manager">Department Manager</option>
+          <option value="employee" selected>Employee</option>
+          <option value="intern">Intern</option>
+          <option value="contractor">Contractor</option>
+        </select>
+        
+        <label for="department">Department:</label>
+        <select id="department">
+          <option value="it">IT</option>
+          <option value="hr">Human Resources</option>
+          <option value="finance">Finance</option>
+          <option value="marketing">Marketing</option>
+          <option value="sales">Sales</option>
+        </select>
+        
+        <label for="clearance">Security Clearance:</label>
+        <select id="clearance">
+          <option value="top">Top Secret</option>
+          <option value="secret">Secret</option>
+          <option value="confidential">Confidential</option>
+          <option value="restricted">Restricted</option>
+          <option value="public" selected>Public</option>
+        </select>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" id="training" name="training">
+          <label for="training">Completed Security Training</label>
+        </div>
+      </div>
+      
+      <div class="resource-attributes">
+        <h3>Resource Attributes</h3>
+        <label for="resource-type">Resource Type:</label>
+        <select id="resource-type">
+          <option value="document">Document</option>
+          <option value="financial">Financial Record</option>
+          <option value="employee-data">Employee Data</option>
+          <option value="system">System</option>
+          <option value="application">Application</option>
+        </select>
+        
+        <label for="resource-owner">Resource Owner:</label>
+        <select id="resource-owner">
+          <option value="it">IT Department</option>
+          <option value="hr">HR Department</option>
+          <option value="finance">Finance Department</option>
+          <option value="marketing">Marketing Department</option>
+          <option value="sales">Sales Department</option>
+        </select>
+        
+        <label for="classification">Classification:</label>
+        <select id="classification">
+          <option value="top-secret">Top Secret</option>
+          <option value="secret">Secret</option>
+          <option value="confidential">Confidential</option>
+          <option value="restricted">Restricted</option>
+          <option value="public">Public</option>
+        </select>
+        
+        <label for="action">Action:</label>
+        <select id="action">
+          <option value="read">Read</option>
+          <option value="write">Write</option>
+          <option value="delete">Delete</option>
+          <option value="execute">Execute</option>
+        </select>
+      </div>
+      
+      <div class="environment-attributes">
+        <h3>Environment Attributes</h3>
+        <label for="location">Access Location:</label>
+        <select id="location">
+          <option value="office">Office</option>
+          <option value="home">Home</option>
+          <option value="remote">Remote Location</option>
+        </select>
+        
+        <label for="network">Network:</label>
+        <select id="network">
+          <option value="corporate">Corporate Network</option>
+          <option value="vpn">VPN</option>
+          <option value="public">Public Network</option>
+        </select>
+        
+        <label for="device">Device Type:</label>
+        <select id="device">
+          <option value="corporate">Corporate Device</option>
+          <option value="byod">BYOD</option>
+          <option value="mobile">Mobile Device</option>
+        </select>
+        
+        <label for="time">Time (24hr):</label>
+        <input type="time" id="time" value="14:00">
+      </div>
+    </div>
+    
+    <button id="check-access">Check Access Permission</button>
+    
+    <div class="result" id="result">
+      <h3>Access Decision</h3>
+      <p id="decision-text">Adjust the attributes above and click "Check Access Permission" to see the result.</p>
+    </div>
+    
+    <div class="resource-display" id="resource-display">
+      <h3>Resource Content</h3>
+      <p id="resource-content">Resource content will appear here if access is granted.</p>
+    </div>
+    
+    <div class="logs" id="logs">
+      <p>ABAC System Logs:</p>
+      <p>> System initialized. Waiting for access request...</p>
+    </div>
+    
+    <div class="policy-section">
+      <h3>ABAC Policies <span class="toggle-section" id="toggle-policies">(Show/Hide)</span></h3>
+      <div id="policies" class="hidden">
+        <div class="policy-rule">
+          <p><strong>Policy 1:</strong> Administrators have full access to all resources.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 2:</strong> Users can only access resources owned by their department, unless they are managers or above.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 3:</strong> User's security clearance must be equal to or higher than the resource classification.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 4:</strong> Delete actions are restricted to resource owners or administrators.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 5:</strong> Access to confidential or higher resources requires security training.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 6:</strong> Access to top-secret resources is only allowed from corporate network and devices.</p>
+        </div>
+        <div class="policy-rule">
+          <p><strong>Policy 7:</strong> Financial records can only be accessed during business hours (9:00-17:00).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get DOM elements
+      const checkAccessBtn = document.getElementById('check-access');
+      const resultDiv = document.getElementById('result');
+      const decisionText = document.getElementById('decision-text');
+      const resourceDisplay = document.getElementById('resource-display');
+      const resourceContent = document.getElementById('resource-content');
+      const logsDiv = document.getElementById('logs');
+      const togglePolicies = document.getElementById('toggle-policies');
+      const policiesDiv = document.getElementById('policies');
+      
+      // Sample resource contents
+      const resourceContents = {
+        document: {
+          public: "This is a public document available to all employees.",
+          restricted: "This document contains information for internal use only.",
+          confidential: "This confidential document contains sensitive business information.",
+          secret: "This secret document contains strategic plans that must be protected.",
+          "top-secret": "This top secret document contains critical information with highest protection."
+        },
+        financial: {
+          public: "Company's public financial statement for the last quarter.",
+          restricted: "Restricted financial data for departmental budgeting.",
+          confidential: "Confidential financial projections for the next fiscal year.",
+          secret: "Secret financial strategy document for upcoming merger.",
+          "top-secret": "Top secret financial contingency plan for market disruption."
+        },
+        "employee-data": {
+          public: "Company directory with public employee information.",
+          restricted: "Restricted employee contact information.",
+          confidential: "Confidential employee performance reviews.",
+          secret: "Secret employee compensation and bonus structure.",
+          "top-secret": "Top secret executive succession planning document."
+        },
+        system: {
+          public: "Public facing system documentation.",
+          restricted: "Restricted system configuration guide.",
+          confidential: "Confidential system architecture document.",
+          secret: "Secret system security measures documentation.",
+          "top-secret": "Top secret system vulnerability assessment."
+        },
+        application: {
+          public: "Public application user guide.",
+          restricted: "Restricted application administration guide.",
+          confidential: "Confidential application source code.",
+          secret: "Secret application security protocols.",
+          "top-secret": "Top secret application encryption algorithms."
+        }
+      };
+      
+      // Toggle policies visibility
+      togglePolicies.addEventListener('click', function() {
+        policiesDiv.classList.toggle('hidden');
+      });
+      
+      // Main access check function
+      checkAccessBtn.addEventListener('click', function() {
+        // Get all attribute values
+        const role = document.getElementById('role').value;
+        const department = document.getElementById('department').value;
+        const clearance = document.getElementById('clearance').value;
+        const training = document.getElementById('training').checked;
+        
+        const resourceType = document.getElementById('resource-type').value;
+        const resourceOwner = document.getElementById('resource-owner').value;
+        const classification = document.getElementById('classification').value;
+        const action = document.getElementById('action').value;
+        
+        const location = document.getElementById('location').value;
+        const network = document.getElementById('network').value;
+        const device = document.getElementById('device').value;
+        const time = document.getElementById('time').value;
+        
+        // Log the request
+        addLog(`Access request: ${role} from ${department} requesting ${action} access to ${classification} ${resourceType} owned by ${resourceOwner} department`);
+        addLog(`Environment: ${location}, ${network} network, ${device} device, time: ${time}`);
+        
+        // Convert clearance and classification to numeric values for comparison
+        const clearanceLevels = { "public": 1, "restricted": 2, "confidential": 3, "secret": 4, "top": 5 };
+        const classificationLevels = { "public": 1, "restricted": 2, "confidential": 3, "secret": 4, "top-secret": 5 };
+        
+        const userClearanceLevel = clearanceLevels[clearance] || 1;
+        const resourceClassLevel = classificationLevels[classification] || 1;
+        
+        // Parse time for business hours check
+        const timeHour = parseInt(time.split(':')[0]);
+        const businessHours = timeHour >= 9 && timeHour < 17;
+        
+        // Initialize access as denied
+        let access = false;
+        let reasons = [];
+        
+        // Apply ABAC policies
+        
+        // Policy 1: Administrators have full access
+        if (role === 'admin') {
+          access = true;
+          addLog("Policy 1 applied: Administrator access granted");
+        }
+        
+        // Policy 2: Department access
+        if (!access) {
+          if (department === resourceOwner || role === 'manager') {
+            // Department match or manager override
+            access = true;
+            addLog(`Policy 2 applied: ${role === 'manager' ? 'Manager override' : 'Department match'}`);
+          } else {
+            reasons.push("You can only access resources owned by your department");
+            addLog("Policy 2 failed: Department mismatch");
+          }
+        }
+        
+        // Policy 3: Clearance level
+        if (access) {
+          if (userClearanceLevel < resourceClassLevel) {
+            access = false;
+            reasons.push("Your security clearance is insufficient for this resource");
+            addLog("Policy 3 failed: Insufficient clearance");
+          } else {
+            addLog("Policy 3 passed: Sufficient clearance");
+          }
+        }
+        
+        // Policy 4: Delete restrictions
+        if (access && action === 'delete') {
+          if (role !== 'admin' && department !== resourceOwner) {
+            access = false;
+            reasons.push("Delete actions are restricted to resource owners or administrators");
+            addLog("Policy 4 failed: Unauthorized delete attempt");
+          } else {
+            addLog("Policy 4 passed: Authorized delete action");
+          }
+        }
+        
+        // Policy 5: Security training
+        if (access && resourceClassLevel >= 3) {  // Confidential or higher
+          if (!training) {
+            access = false;
+            reasons.push("Security training is required for confidential or higher resources");
+            addLog("Policy 5 failed: Security training required");
+          } else {
+            addLog("Policy 5 passed: Security training verified");
+          }
+        }
+        
+        // Policy 6: Top-secret environment restrictions
+        if (access && classification === 'top-secret') {
+          if (network !== 'corporate' || device !== 'corporate') {
+            access = false;
+            reasons.push("Top-secret resources can only be accessed from corporate network and devices");
+            addLog("Policy 6 failed: Insecure environment for top-secret access");
+          } else {
+            addLog("Policy 6 passed: Secure environment for top-secret access");
+          }
+        }
+        
+        // Policy 7: Financial records business hours
+        if (access && resourceType === 'financial' && !businessHours) {
+          access = false;
+          reasons.push("Financial records can only be accessed during business hours (9:00-17:00)");
+          addLog("Policy 7 failed: Outside business hours for financial access");
+        } else if (access && resourceType === 'financial') {
+          addLog("Policy 7 passed: Within business hours for financial access");
+        }
+        
+        // Update the UI based on access decision
+        updateResult(access, reasons, resourceType, classification);
+      });
+      
+      function updateResult(access, reasons, resourceType, classification) {
+        resultDiv.className = access ? 'result access-granted' : 'result access-denied';
+        
+        if (access) {
+          decisionText.innerHTML = `<strong>✅ Access Granted!</strong> You have permission to perform this action.`;
+          resourceDisplay.style.display = 'block';
+          
+          // Display resource content based on type and classification
+          if (resourceContents[resourceType] && resourceContents[resourceType][classification]) {
+            resourceContent.textContent = resourceContents[resourceType][classification];
+          } else {
+            resourceContent.textContent = "Resource content available. Access granted.";
+          }
+          
+          addLog("Final decision: ACCESS GRANTED ✅");
+        } else {
+          let reasonText = reasons.length > 0 ? `<br><br>Reasons:<ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>` : '';
+          decisionText.innerHTML = `<strong>❌ Access Denied!</strong> You don't have permission to perform this action.${reasonText}`;
+          resourceDisplay.style.display = 'none';
+          
+          addLog("Final decision: ACCESS DENIED ❌");
+          reasons.forEach(reason => {
+            addLog(`- ${reason}`);
+          });
+        }
+      }
+      
+      function addLog(message) {
+        const now = new Date();
+        const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        const logEntry = document.createElement('p');
+        logEntry.textContent = `[${timestamp}] ${message}`;
+        logsDiv.appendChild(logEntry);
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+      }
+      
+      // Set current time as default
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('time').value = `${hours}:${minutes}`;
+    });
+  </script>
+</body>
+</html>
