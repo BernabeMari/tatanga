@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attribute-Based Access Control Demo</title>
+  <title>Simplified ABAC Demo</title>
   <style>
     * {
       box-sizing: border-box;
@@ -167,11 +167,18 @@
       margin-left: 8px;
       font-weight: normal;
     }
+    
+    .role-description {
+      margin-top: 5px;
+      font-style: italic;
+      font-size: 0.9em;
+      color: #777;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Attribute-Based Access Control System</h1>
+    <h1>Simplified ABAC System</h1>
     
     <div class="controls">
       <div class="user-attributes">
@@ -181,26 +188,14 @@
           <option value="admin">Administrator</option>
           <option value="manager">Department Manager</option>
           <option value="employee" selected>Employee</option>
-          <option value="intern">Intern</option>
-          <option value="contractor">Contractor</option>
         </select>
+        <div id="role-description" class="role-description">Regular employee with standard access rights</div>
         
         <label for="department">Department:</label>
         <select id="department">
           <option value="it">IT</option>
-          <option value="hr">Human Resources</option>
+          <option value="hr">HR</option>
           <option value="finance">Finance</option>
-          <option value="marketing">Marketing</option>
-          <option value="sales">Sales</option>
-        </select>
-        
-        <label for="clearance">Security Clearance:</label>
-        <select id="clearance">
-          <option value="top">Top Secret</option>
-          <option value="secret">Secret</option>
-          <option value="confidential">Confidential</option>
-          <option value="restricted">Restricted</option>
-          <option value="public" selected>Public</option>
         </select>
         
         <div class="checkbox-group">
@@ -225,25 +220,6 @@
           <option value="it">IT Department</option>
           <option value="hr">HR Department</option>
           <option value="finance">Finance Department</option>
-          <option value="marketing">Marketing Department</option>
-          <option value="sales">Sales Department</option>
-        </select>
-        
-        <label for="classification">Classification:</label>
-        <select id="classification">
-          <option value="top-secret">Top Secret</option>
-          <option value="secret">Secret</option>
-          <option value="confidential">Confidential</option>
-          <option value="restricted">Restricted</option>
-          <option value="public">Public</option>
-        </select>
-        
-        <label for="action">Action:</label>
-        <select id="action">
-          <option value="read">Read</option>
-          <option value="write">Write</option>
-          <option value="delete">Delete</option>
-          <option value="execute">Execute</option>
         </select>
       </div>
       
@@ -261,13 +237,6 @@
           <option value="corporate">Corporate Network</option>
           <option value="vpn">VPN</option>
           <option value="public">Public Network</option>
-        </select>
-        
-        <label for="device">Device Type:</label>
-        <select id="device">
-          <option value="corporate">Corporate Device</option>
-          <option value="byod">BYOD</option>
-          <option value="mobile">Mobile Device</option>
         </select>
         
         <label for="time">Time (24hr):</label>
@@ -299,22 +268,16 @@
           <p><strong>Policy 1:</strong> Administrators have full access to all resources.</p>
         </div>
         <div class="policy-rule">
-          <p><strong>Policy 2:</strong> Users can only access resources owned by their department, unless they are managers or above.</p>
+          <p><strong>Policy 2:</strong> Users can only access resources owned by their department, unless they are managers or administrators.</p>
         </div>
         <div class="policy-rule">
-          <p><strong>Policy 3:</strong> User's security clearance must be equal to or higher than the resource classification.</p>
+          <p><strong>Policy 3:</strong> Financial records can only be accessed during business hours (9:00-17:00).</p>
         </div>
         <div class="policy-rule">
-          <p><strong>Policy 4:</strong> Delete actions are restricted to resource owners or administrators.</p>
+          <p><strong>Policy 4:</strong> Sensitive resources require security training certification.</p>
         </div>
         <div class="policy-rule">
-          <p><strong>Policy 5:</strong> Access to confidential or higher resources requires security training.</p>
-        </div>
-        <div class="policy-rule">
-          <p><strong>Policy 6:</strong> Access to top-secret resources is only allowed from corporate network and devices.</p>
-        </div>
-        <div class="policy-rule">
-          <p><strong>Policy 7:</strong> Financial records can only be accessed during business hours (9:00-17:00).</p>
+          <p><strong>Policy 5:</strong> System resources can only be accessed from corporate network or VPN.</p>
         </div>
       </div>
     </div>
@@ -331,45 +294,32 @@
       const logsDiv = document.getElementById('logs');
       const togglePolicies = document.getElementById('toggle-policies');
       const policiesDiv = document.getElementById('policies');
+      const roleSelect = document.getElementById('role');
+      const roleDescription = document.getElementById('role-description');
+      
+      // Role descriptions
+      const roleDescriptions = {
+        'admin': 'System administrator with full access to all resources',
+        'manager': 'Department manager with elevated access across departments',
+        'employee': 'Regular employee with standard access rights'
+      };
+      
+      // Update role description when selection changes
+      roleSelect.addEventListener('change', function() {
+        roleDescription.textContent = roleDescriptions[this.value] || '';
+      });
       
       // Sample resource contents
       const resourceContents = {
-        document: {
-          public: "This is a public document available to all employees.",
-          restricted: "This document contains information for internal use only.",
-          confidential: "This confidential document contains sensitive business information.",
-          secret: "This secret document contains strategic plans that must be protected.",
-          "top-secret": "This top secret document contains critical information with highest protection."
-        },
-        financial: {
-          public: "Company's public financial statement for the last quarter.",
-          restricted: "Restricted financial data for departmental budgeting.",
-          confidential: "Confidential financial projections for the next fiscal year.",
-          secret: "Secret financial strategy document for upcoming merger.",
-          "top-secret": "Top secret financial contingency plan for market disruption."
-        },
-        "employee-data": {
-          public: "Company directory with public employee information.",
-          restricted: "Restricted employee contact information.",
-          confidential: "Confidential employee performance reviews.",
-          secret: "Secret employee compensation and bonus structure.",
-          "top-secret": "Top secret executive succession planning document."
-        },
-        system: {
-          public: "Public facing system documentation.",
-          restricted: "Restricted system configuration guide.",
-          confidential: "Confidential system architecture document.",
-          secret: "Secret system security measures documentation.",
-          "top-secret": "Top secret system vulnerability assessment."
-        },
-        application: {
-          public: "Public application user guide.",
-          restricted: "Restricted application administration guide.",
-          confidential: "Confidential application source code.",
-          secret: "Secret application security protocols.",
-          "top-secret": "Top secret application encryption algorithms."
-        }
+        document: "This is a document with important company information.",
+        financial: "This financial record contains budget and expense data.",
+        "employee-data": "This resource contains employee information and records.",
+        system: "This system resource contains configuration and infrastructure details.",
+        application: "This application resource contains software code and documentation."
       };
+      
+      // Define which resource types are sensitive (require training)
+      const sensitiveResources = ['financial', 'employee-data', 'system'];
       
       // Toggle policies visibility
       togglePolicies.addEventListener('click', function() {
@@ -381,29 +331,18 @@
         // Get all attribute values
         const role = document.getElementById('role').value;
         const department = document.getElementById('department').value;
-        const clearance = document.getElementById('clearance').value;
         const training = document.getElementById('training').checked;
         
         const resourceType = document.getElementById('resource-type').value;
         const resourceOwner = document.getElementById('resource-owner').value;
-        const classification = document.getElementById('classification').value;
-        const action = document.getElementById('action').value;
         
         const location = document.getElementById('location').value;
         const network = document.getElementById('network').value;
-        const device = document.getElementById('device').value;
         const time = document.getElementById('time').value;
         
         // Log the request
-        addLog(`Access request: ${role} from ${department} requesting ${action} access to ${classification} ${resourceType} owned by ${resourceOwner} department`);
-        addLog(`Environment: ${location}, ${network} network, ${device} device, time: ${time}`);
-        
-        // Convert clearance and classification to numeric values for comparison
-        const clearanceLevels = { "public": 1, "restricted": 2, "confidential": 3, "secret": 4, "top": 5 };
-        const classificationLevels = { "public": 1, "restricted": 2, "confidential": 3, "secret": 4, "top-secret": 5 };
-        
-        const userClearanceLevel = clearanceLevels[clearance] || 1;
-        const resourceClassLevel = classificationLevels[classification] || 1;
+        addLog(`Access request: ${role} from ${department} requesting access to ${resourceType} owned by ${resourceOwner}`);
+        addLog(`Environment: ${location}, ${network} network, time: ${time}`);
         
         // Parse time for business hours check
         const timeHour = parseInt(time.split(':')[0]);
@@ -423,7 +362,7 @@
         
         // Policy 2: Department access
         if (!access) {
-          if (department === resourceOwner || role === 'manager') {
+          if (department === resourceOwner.split(' ')[0].toLowerCase() || role === 'manager') {
             // Department match or manager override
             access = true;
             addLog(`Policy 2 applied: ${role === 'manager' ? 'Manager override' : 'Department match'}`);
@@ -433,73 +372,51 @@
           }
         }
         
-        // Policy 3: Clearance level
-        if (access) {
-          if (userClearanceLevel < resourceClassLevel) {
-            access = false;
-            reasons.push("Your security clearance is insufficient for this resource");
-            addLog("Policy 3 failed: Insufficient clearance");
-          } else {
-            addLog("Policy 3 passed: Sufficient clearance");
-          }
-        }
-        
-        // Policy 4: Delete restrictions
-        if (access && action === 'delete') {
-          if (role !== 'admin' && department !== resourceOwner) {
-            access = false;
-            reasons.push("Delete actions are restricted to resource owners or administrators");
-            addLog("Policy 4 failed: Unauthorized delete attempt");
-          } else {
-            addLog("Policy 4 passed: Authorized delete action");
-          }
-        }
-        
-        // Policy 5: Security training
-        if (access && resourceClassLevel >= 3) {  // Confidential or higher
-          if (!training) {
-            access = false;
-            reasons.push("Security training is required for confidential or higher resources");
-            addLog("Policy 5 failed: Security training required");
-          } else {
-            addLog("Policy 5 passed: Security training verified");
-          }
-        }
-        
-        // Policy 6: Top-secret environment restrictions
-        if (access && classification === 'top-secret') {
-          if (network !== 'corporate' || device !== 'corporate') {
-            access = false;
-            reasons.push("Top-secret resources can only be accessed from corporate network and devices");
-            addLog("Policy 6 failed: Insecure environment for top-secret access");
-          } else {
-            addLog("Policy 6 passed: Secure environment for top-secret access");
-          }
-        }
-        
-        // Policy 7: Financial records business hours
+        // Policy 3: Financial records business hours
         if (access && resourceType === 'financial' && !businessHours) {
           access = false;
           reasons.push("Financial records can only be accessed during business hours (9:00-17:00)");
-          addLog("Policy 7 failed: Outside business hours for financial access");
+          addLog("Policy 3 failed: Outside business hours for financial access");
         } else if (access && resourceType === 'financial') {
-          addLog("Policy 7 passed: Within business hours for financial access");
+          addLog("Policy 3 passed: Within business hours for financial access");
+        }
+        
+        // Policy 4: Security training for sensitive resources
+        if (access && sensitiveResources.includes(resourceType)) {
+          if (!training) {
+            access = false;
+            reasons.push("Security training is required for sensitive resources");
+            addLog("Policy 4 failed: Security training required");
+          } else {
+            addLog("Policy 4 passed: Security training verified");
+          }
+        }
+        
+        // Policy 5: System resources network restriction
+        if (access && resourceType === 'system') {
+          if (network !== 'corporate' && network !== 'vpn') {
+            access = false;
+            reasons.push("System resources can only be accessed from corporate network or VPN");
+            addLog("Policy 5 failed: Insecure network for system resource");
+          } else {
+            addLog("Policy 5 passed: Secure network for system resource");
+          }
         }
         
         // Update the UI based on access decision
-        updateResult(access, reasons, resourceType, classification);
+        updateResult(access, reasons, resourceType);
       });
       
-      function updateResult(access, reasons, resourceType, classification) {
+      function updateResult(access, reasons, resourceType) {
         resultDiv.className = access ? 'result access-granted' : 'result access-denied';
         
         if (access) {
           decisionText.innerHTML = `<strong>✅ Access Granted!</strong> You have permission to perform this action.`;
           resourceDisplay.style.display = 'block';
           
-          // Display resource content based on type and classification
-          if (resourceContents[resourceType] && resourceContents[resourceType][classification]) {
-            resourceContent.textContent = resourceContents[resourceType][classification];
+          // Display resource content based on type
+          if (resourceContents[resourceType]) {
+            resourceContent.textContent = resourceContents[resourceType];
           } else {
             resourceContent.textContent = "Resource content available. Access granted.";
           }
